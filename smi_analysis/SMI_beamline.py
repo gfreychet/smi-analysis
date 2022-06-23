@@ -92,7 +92,7 @@ class SMI_geometry():
             self.bs = self.bs + [[0, 0]]*(len(lst_img) - len(self.bs))
 
         for i, (img, bs) in enumerate(zip(lst_img, self.bs)):
-            if self.detector != 'rayonix' or self.detector != 'Eiger1M_xeuss':
+            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss':
                 if self.detector == 'Pilatus900kw':
                     if self.det_angles != []:
                         module = 0
