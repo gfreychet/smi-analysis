@@ -281,7 +281,8 @@ class Eiger1M_xeuss(Eiger1M):
     Eiger1M class inherited from the pyFAI Eiger1M class
     This class is used to add a specific masking for the Eiger1M of the xeuss instru at CEA
     '''
-    
+    aliases = ["Eiger1M_xeuss"]
+
     def calc_mask(self, img):
         '''
         :return: (a 2D array) A mask array with 0 and 1 with 0s where the image will be masked
