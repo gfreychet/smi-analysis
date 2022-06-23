@@ -1,6 +1,6 @@
 import numpy as np
 from pyFAI import detectors
-from pyFAI.detectors import Pilatus300kw, Pilatus1M, Pilatus100k, Pilatus300k
+from pyFAI.detectors import Pilatus300kw, Pilatus1M, Pilatus100k, Pilatus300k, Eiger1M
 from pyFAI.detectors._common import Detector
 
 
@@ -272,5 +272,26 @@ class Rayonix(rayonix):
             mask = np.ones_like(img, dtype=bool)
             mask[:, :5], mask[:, -5:], mask[:5, :], mask[-5:, :] = False, False, False, False
             mask[np.where(img < threshold)] = False
+
+        return np.logical_not(mask)
+
+
+class Eiger1M_xeuss(Eiger1M):
+    '''
+    Eiger1M class inherited from the pyFAI Eiger1M class
+    This class is used to add a specific masking for the Eiger1M of the xeuss instru at CEA
+    '''
+    
+    def calc_mask(self, img):
+        '''
+        :return: (a 2D array) A mask array with 0 and 1 with 0s where the image will be masked
+        '''
+        
+        mask = np.logical_not(np.zeros(np.shape(img)))
+        self.shape= np.shape(img)
+        mask[np.where(img<-0.5)]=False
+
+        mask[:, :5], mask[:, -5:], mask[:5, :], mask[-5:,
+                                                :] = False, False, False, False
 
         return np.logical_not(mask)
