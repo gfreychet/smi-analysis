@@ -175,9 +175,9 @@ class SMI_geometry():
         if self.det == 'Eiger1M_xeuss':
             for i, det_rot in enumerate(det_rots):
                 ai_temp = copy.deepcopy(ai)
-                ai_temp.set_rot1(det_rot)
-                ai_temp.set_rot2(det_rot)
-                ai_temp.set_rot3(det_rot)
+                ai_temp.set_rot1(det_rot[0])
+                ai_temp.set_rot2(det_rot[1])
+                ai_temp.set_rot3(det_rot[2])
                 self.ai.append(ai_temp)
         else:
             for i, det_rot in enumerate(det_rots):
