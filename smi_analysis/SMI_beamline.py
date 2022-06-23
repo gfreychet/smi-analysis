@@ -172,10 +172,18 @@ class SMI_geometry():
         ai.setFit2D(self.sdd, self.center[0], self.center[1])
         ai.set_wavelength(self.wav)
 
-        for i, det_rot in enumerate(det_rots):
-            ai_temp = copy.deepcopy(ai)
-            ai_temp.set_rot1(det_rot)
-            self.ai.append(ai_temp)
+        if self.det == 'Eiger1M_xeuss':
+            for i, det_rot in enumerate(det_rots):
+                ai_temp = copy.deepcopy(ai)
+                ai_temp.set_rot1(det_rot)
+                ai_temp.set_rot2(det_rot)
+                ai_temp.set_rot3(det_rot)
+                self.ai.append(ai_temp)
+        else:
+            for i, det_rot in enumerate(det_rots):
+                ai_temp = copy.deepcopy(ai)
+                ai_temp.set_rot1(det_rot)
+                self.ai.append(ai_temp)
 
     def calculate_integrator_gi(self, det_rots):
         ai = Transform(wavelength=self.wav, detector=self.det, incident_angle=self.alphai)
