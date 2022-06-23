@@ -70,6 +70,8 @@ class SMI_geometry():
             self.det = Detector.Pilatus100k_OPLS()
         elif self.detector == 'Pilatus300k_OPLS':
             self.det = Detector.Pilatus300k_OPLS()
+        elif self.detector == 'Eiger1M_xeuss':
+            self.det = Detector.Eiger1M_xeuss()
         else:
             raise Exception('Unknown detector for SMI. Should be either: Pilatus1m or Pilatus300kw or rayonix')
 
@@ -90,7 +92,7 @@ class SMI_geometry():
             self.bs = self.bs + [[0, 0]]*(len(lst_img) - len(self.bs))
 
         for i, (img, bs) in enumerate(zip(lst_img, self.bs)):
-            if self.detector != 'rayonix':
+            if self.detector != 'rayonix' or self.detector != 'Eiger1M_xeuss':
                 if self.detector == 'Pilatus900kw':
                     if self.det_angles != []:
                         module = 0
@@ -120,6 +122,9 @@ class SMI_geometry():
                 self.imgs.append(fabio.open(os.path.join(path, img)).data)
             elif self.detector == 'Pilatus300k_OPLS':
                 self.imgs.append(fabio.open(os.path.join(path, img)).data)
+            elif self.detector == 'Eiger1M_xeuss':
+                self.imgs.append(fabio.open(os.path.join(path, img)).data)
+                self.masks.append(self.det.calc_mask(img=self.imgs[0]))
 
     def open_data_db(self, lst_img, optional_mask=None):
         """
