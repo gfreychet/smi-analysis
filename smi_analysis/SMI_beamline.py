@@ -172,7 +172,7 @@ class SMI_geometry():
         ai.setFit2D(self.sdd, self.center[0], self.center[1])
         ai.set_wavelength(self.wav)
 
-        if self.det == 'Eiger1M_xeuss':
+        if self.detector == 'Eiger1M_xeuss':
             for i, det_rot in enumerate(det_rots):
                 ai_temp = copy.deepcopy(ai)
                 ai_temp.set_rot1(det_rot[0])
