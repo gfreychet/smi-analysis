@@ -226,7 +226,6 @@ class SMI_geometry():
                 self.ai.append(ai_temp)
 
     def stitching_data(self, flag_scale=True, interp_factor=1):
-        print('test')
         self.img_st, self.qp, self.qz = [], [], []
 
         if self.ai == []:
