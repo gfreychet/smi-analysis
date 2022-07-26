@@ -68,7 +68,7 @@ def remesh_transmission(image, ai, bins=None, q_h_range=None, q_v_range=None, ma
     q_v = q_y
     q_h = q_x
 
-    # resc_q = False
+    resc_q = False
     # if -q_v.min() > np.pi:
     #     resc_q = True
     #     q_v *= 0.1
