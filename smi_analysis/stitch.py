@@ -20,83 +20,96 @@ def stitching(datas, ais, masks, geometry ='Reflection', interp_factor = 2, flag
     :param resc_q: Rescale qs. This is a trick to fix a bug from pyFAI when qs have a higher value than pi
     :type resc_q: Boolean
     '''
-   
-    print('test')
 
     for i, (data, ai, mask) in enumerate(zip(datas, ais, masks)):
         if geometry == 'Reflection':
             img, x, y = remesh.remesh_gi(data, ai, method='splitbbox', mask=mask)
             if i == 0:
-                q_p_ini, q_z_ini = np.zeros((np.shape(x)[0], len(datas))), np.zeros((np.shape(y)[0], len(datas)))
+                q_p_ini = np.zeros((np.shape(x)[0], len(datas)))
+                q_z_ini = np.zeros((np.shape(y)[0], len(datas)))
             q_p_ini[:len(x), i] = -x[::-1]
             q_z_ini[:len(y), i] = y[::-1]
-
 
         elif geometry == 'Transmission':
             img, x, y, resc_q = remesh.remesh_transmission(data, ai, mask=mask)
             if i == 0:
-                q_p_ini, q_z_ini = np.zeros((np.shape(x)[0], len(datas))), np.zeros((np.shape(y)[0], len(datas)))
+                q_p_ini = np.zeros((np.shape(x)[0], len(datas)))
+                q_z_ini = np.zeros((np.shape(y)[0], len(datas)))
             q_p_ini[:len(x), i] = x
             q_z_ini[:len(y), i] = y
 
     nb_point_qp = len(q_p_ini[:, 0])
-    nb_point_qz = len(q_p_ini[:, 0])
+    nb_point_qz = len(q_z_ini[:, 0])
 
     for i in range(1, np.shape(q_p_ini)[1], 1):
         y = np.argmin(abs(q_p_ini[:, i - 1] - np.min(q_p_ini[:, i])))
-        z = np.argmin(abs(q_z_ini[:, i - 1] - np.min(q_z_ini[:, i])))
         nb_point_qp += len(q_p_ini[:, i]) - y
-        nb_point_qz += len(q_z_ini[:, i]) - z
 
+        z = np.argmin(abs(q_z_ini[:, i - 1] - np.min(q_z_ini[:, i])))
+        if z==0:
+            nb_point_qz += 0 #same qz range
+        else:
+            nb_point_qz += len(q_z_ini[:, i]) - z
 
     nb_point_qp = nb_point_qp * interp_factor
     nb_point_qz = nb_point_qz * interp_factor
 
-    qp_remesh = np.linspace(min(q_p_ini[:, 0]), max(q_p_ini[:, -1]), nb_point_qp)
-    # qz_remesh = np.linspace(min(q_z_ini[:, 0]), max(q_z_ini[:, -1]), int(
-    #     nb_point_qp * abs(max(q_z_ini[:, -1]) - min(q_z_ini[:, 0])) / abs(max(q_p_ini[:, -1]) - min(q_p_ini[:, 0]))))
-
-    qz_remesh = np.linspace(min(q_z_ini[:, 0]), max(q_z_ini[:, -1]), nb_point_qz)
+    qp_remesh = np.linspace(min(q_p_ini.ravel()), max(q_p_ini.ravel()), nb_point_qp)
+    qz_remesh = np.linspace(min(q_z_ini.ravel()), max(q_z_ini.ravel()), nb_point_qz)
 
     for i, (data, ai, mask) in enumerate(zip(datas, ais, masks)):
         qp_start = np.argmin(abs(qp_remesh - np.min(q_p_ini[:, i])))
         qp_stop = np.argmin(abs(qp_remesh - np.max(q_p_ini[:, i])))
         qz_start = np.argmin(abs(qz_remesh - np.min(q_z_ini[:, i])))
         qz_stop = np.argmin(abs(qz_remesh - np.max(q_z_ini[:, i])))
-        
-        # npt = (int(qp_stop - qp_start), int(np.shape(qz_remesh)[0]))
-        npt = (int(qp_stop - qp_start), int(qz_stop-qz_start))
+
+        npt = (int(qp_stop - qp_start), int(qz_stop - qz_start))
 
         if geometry == 'Reflection':
             ip_range = (-qp_remesh[qp_stop], -qp_remesh[qp_start])
-            op_range = (qz_remesh[0], qz_remesh[-1])
-            msk,_,_ = remesh.remesh_gi(mask.astype(int), ai, npt=npt, q_h_range=ip_range, q_v_range=op_range, method='splitbbox', mask=mask)
-            img, x, y = remesh.remesh_gi(data, ai, npt=npt, q_h_range=ip_range, q_v_range=op_range, method='splitbbox', mask=mask)
+            op_range = (qz_remesh[qz_stop], qz_remesh[qz_start])
+
+            msk, _, _ = remesh.remesh_gi(mask.astype(int), ai, npt=npt,
+                                         q_h_range=ip_range, q_v_range=op_range,
+                                         method='splitbbox', mask=mask)
+            img, x, y = remesh.remesh_gi(data, ai, npt=npt, q_h_range=ip_range,
+                                         q_v_range=op_range, method='splitbbox',
+                                         mask=mask)
             qimage, qmask = np.rot90(img, 2), np.rot90(msk, 2)
-            qp, qz = -x[::-1], y[::-1]
+
+            temp = len(qz_remesh) - qz_stop
+            qz_stop = len(qz_remesh) - qz_start
+            qz_start = temp
 
         elif geometry == 'Transmission':
             ip_range = (qp_remesh[qp_start], qp_remesh[qp_stop])
-            # op_range = (qz_remesh[0], qz_remesh[-1])
             op_range = (qz_remesh[qz_start], qz_remesh[qz_stop])
-            print(op_range)
 
-            qmask,_,_,_ = remesh.remesh_transmission(mask.astype(int), ai, bins=npt, q_h_range=ip_range, q_v_range=op_range, mask=None)
-            qimage, x, y, resc_q = remesh.remesh_transmission(data, ai, bins=npt, q_h_range=ip_range, q_v_range=op_range, mask=mask)
+            qmask, _, _, _ = remesh.remesh_transmission(mask.astype(int), ai,
+                                                        bins=npt,
+                                                        q_h_range=ip_range,
+                                                        q_v_range=op_range,
+                                                        mask=None)
 
+            qimage, x, y, resc_q = remesh.remesh_transmission(data, ai,
+                                                              bins=npt,
+                                                              q_h_range=ip_range,
+                                                              q_v_range=op_range,
+                                                              mask=mask)
 
         if i == 0:
             img_te = np.zeros((np.shape(qz_remesh)[0], np.shape(qp_remesh)[0]))
             img_mask = np.zeros(np.shape(img_te))
 
-            sca, sca1, sca2, sca3 = np.zeros(np.shape(img_te)), np.zeros(np.shape(img_te)), \
+            sca, sca1, sca2, sca3 = np.zeros(np.shape(img_te)), np.zeros(np.shape(img_te)),\
                                     np.zeros(np.shape(img_te)), np.zeros(np.shape(img_te))
-            img_te[:np.shape(qimage)[0], :np.shape(qimage)[1]] = qimage
-            img_mask[:np.shape(qimage)[0], :np.shape(qmask)[1]] += np.logical_not(qmask).astype(int)
 
-            sca[np.nonzero(qimage)] += 1
-            sca2[np.nonzero(qimage)] += 1
-            sca3[np.nonzero(qimage)] += 1
+            img_te[qz_start:qz_stop, qp_start:qp_stop] = qimage
+            img_mask[qz_start:qz_stop, qp_start:qp_stop] += np.logical_not(qmask).astype(int)
+
+            sca[qz_start: qz_start + np.shape(qimage)[0], qp_start: qp_start +np.shape(qimage)[1]] += (qimage > 0).astype(int)
+            sca2[qz_start: qz_start + np.shape(qimage)[0], qp_start: qp_start +np.shape(qimage)[1]] += (qimage > 0).astype(int)
+            sca3[qz_start: qz_start + np.shape(qimage)[0], qp_start: qp_start +np.shape(qimage)[1]] += (qimage > 0).astype(int)
 
             scale = 1.
             scales = []
@@ -107,56 +120,69 @@ def stitching(datas, ais, masks, geometry ='Reflection', interp_factor = 2, flag
                 threshold = 0.01
             else:
                 threshold = 0.000001
+
             sca1 = np.ones(np.shape(sca)) * sca
-            sca1[qz_start: qz_start + np.shape(qimage)[0], qp_start: qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+            sca1[qz_start: qz_start + np.shape(qimage)[0],
+            qp_start: qp_start + np.shape(qimage)[1]] += (
+                        qimage >= threshold).astype(int)
 
             img1 = np.ma.masked_array(img_te, mask=sca1 != 2 * sca)
             img1 = np.ma.masked_where(img1 < threshold, img1)
-            img_te[qz_start: qz_start + np.shape(qimage)[0], qp_start:qp_start + np.shape(qimage)[1]] += qimage
-            img_mask[qz_start: qz_start + np.shape(qimage)[0], qp_start:qp_start + np.shape(qimage)[1]] += ((qimage >= threshold).astype(int) * np.logical_not(qmask).astype(int))
+            img_te[qz_start: qz_start + np.shape(qimage)[0],
+            qp_start:qp_start + np.shape(qimage)[1]] += qimage
+            img_mask[qz_start: qz_start + np.shape(qimage)[0],
+            qp_start:qp_start + np.shape(qimage)[1]] += (
+                        (qimage >= threshold).astype(int) * np.logical_not(
+                    qmask).astype(int))
 
             img2 = np.ma.masked_array(img_te, mask=sca1 != 2 * sca)
             img2 = np.ma.masked_where(img2 < threshold, img2)
 
             scale *= abs(np.mean(img2) - np.mean(img1)) / np.mean(img1)
             if np.ma.is_masked(scale):
-                scale = scales[i-1]
+                scale = scales[i - 1]
 
-            sca[qz_start: qz_start + np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+            sca[qz_start: qz_start + np.shape(qimage)[0],
+            qp_start:  qp_start + np.shape(qimage)[1]] += (
+                        qimage >= threshold).astype(int)
 
             if flag_scale:
                 if ai.detector.aliases[0] != 'Pilatus 900kw (Vertical)':
-                    sca2[:, qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int) * scale
+                    sca2[qz_start:qz_start+np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int) * scale
                     scales.append(scale)
                 else:
                     if i % 3 == 0:
                         sca3 = np.zeros(np.shape(img_te))
-                        sca3[:, qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+                        sca3[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                                    qimage >= threshold).astype(int)
                         scales.append(scale)
                     elif i % 3 == 1:
                         sca4 = np.zeros(np.shape(img_te))
-                        sca4[:, qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+                        sca4[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                                    qimage >= threshold).astype(int)
                         scales.append(scale)
                     elif i % 3 == 2:
                         sca5 = np.zeros(np.shape(img_te))
-                        sca5[:, qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+                        sca5[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                                    qimage >= threshold).astype(int)
                         scales.append(scale)
 
-                        scale_max = np.max(scales[i-2:i])
+                        scale_max = np.max(scales[i - 2:i])
                         if i == 2:
                             sca2 = np.zeros(np.shape(img_te))
                         sca2 += sca3 * scale_max
                         sca2 += sca4 * scale_max
                         sca2 += sca5 * scale_max
-                        scales[i-2], scales[i-1], scales[i] = scale_max, scale_max, scale_max
+                        scales[i - 2], scales[i - 1], scales[
+                            i] = scale_max, scale_max, scale_max
 
             else:
-                sca2[:, qp_start:  qp_start + np.shape(qimage)[1]] += (qimage >= threshold).astype(int)
+                sca2[qz_start: qz_start + np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (
+                            qimage >= threshold).astype(int)
                 scales.append(1)
 
     sca2[np.where(sca2 == 0)] = 1
     img = img_te / sca2
-
     mask = (img_mask.astype(bool)).astype(int)
 
     if geometry == 'Reflection':
@@ -169,7 +195,6 @@ def stitching(datas, ais, masks, geometry ='Reflection', interp_factor = 2, flag
         qp[:] = [x * 10 for x in qp]
         qz[:] = [x * 10 for x in qz]
 
-    # return img, qp, qz, scales
     return img, mask, qp, qz, scales
 
 
