@@ -168,35 +168,65 @@ class SMI_geometry():
                                                         'rot2': 0,
                                                         'rot3': 0}
                                                      )
-
-        ai.setFit2D(self.sdd, self.center[0], self.center[1])
         ai.set_wavelength(self.wav)
 
         if self.detector == 'Eiger1M_xeuss':
-            for i, det_rot in enumerate(det_rots):
-                ai_temp = copy.deepcopy(ai)
-                ai_temp.set_rot1(det_rot[0])
-                ai_temp.set_rot2(det_rot[1])
-                ai_temp.set_rot3(det_rot[2])
-                self.ai.append(ai_temp)
+            if len(det_rots) == len(self.center) and len(det_rots) == len(self.sdd):
+                for i, (det_rot, center, sdd) in enumerate(zip(det_rots, self.center, self.sdd)):
+                    ai.setFit2D(sdd, center[0], center[1])
+                    ai_temp = copy.deepcopy(ai)
+                    ai_temp.set_rot1(det_rot[0])
+                    ai_temp.set_rot2(det_rot[1])
+                    ai_temp.set_rot3(det_rot[2])
+                    self.ai.append(ai_temp)
+            else:
+                for i, det_rot in enumerate(det_rots):
+                    ai.setFit2D(self.sdd, self.center[0], self.center[1])
+                    ai_temp = copy.deepcopy(ai)
+                    ai_temp.set_rot1(det_rot[0])
+                    ai_temp.set_rot2(det_rot[1])
+                    ai_temp.set_rot3(det_rot[2])
+                    self.ai.append(ai_temp)
         else:
             for i, det_rot in enumerate(det_rots):
+                ai.setFit2D(self.sdd, self.center[0], self.center[1])
                 ai_temp = copy.deepcopy(ai)
                 ai_temp.set_rot1(det_rot)
                 self.ai.append(ai_temp)
 
     def calculate_integrator_gi(self, det_rots):
         ai = Transform(wavelength=self.wav, detector=self.det, incident_angle=self.alphai)
-        ai.setFit2D(directDist=self.sdd, centerX=self.center[0], centerY=self.center[1])
-        ai.set_incident_angle(self.alphai)
 
-        for i, det_rot in enumerate(det_rots):
-            ai_temp = copy.deepcopy(ai)
-            ai_temp.set_rot1(det_rot)
-            ai_temp.set_incident_angle(self.alphai)
-            self.ai.append(ai_temp)
+        if self.detector == 'Eiger1M_xeuss':
+            if len(det_rots) == len(self.center) and len(det_rots) == len(self.sdd):
+                for i, (det_rot, center, sdd) in enumerate(zip(det_rots, self.center, self.sdd)):
+                    ai.setFit2D(directDist=sdd, centerX=center[0], centerY=center[1])
+                    ai_temp = copy.deepcopy(ai)
+                    ai_temp.set_rot1(det_rot[0])
+                    ai_temp.set_rot2(det_rot[1])
+                    ai_temp.set_rot3(det_rot[2])
+                    ai_temp.set_incident_angle(self.alphai)
+                    self.ai.append(ai_temp)
+            else:
+                for i, det_rot in enumerate(det_rots):
+                    ai.setFit2D(directDist=self.sdd, centerX=self.center[0], centerY=self.center[1])
+                    ai_temp = copy.deepcopy(ai)
+                    ai_temp.set_rot1(det_rot[0])
+                    ai_temp.set_rot2(det_rot[1])
+                    ai_temp.set_rot3(det_rot[2])
+                    ai_temp.set_incident_angle(self.alphai)
+                    self.ai.append(ai_temp)
+        else:
+            for i, det_rot in enumerate(det_rots):
+                ai.setFit2D(directDist=self.sdd, centerX=self.center[0],
+                            centerY=self.center[1])
+                ai_temp = copy.deepcopy(ai)
+                ai_temp.set_rot1(det_rot)
+                ai_temp.set_incident_angle(self.alphai)
+                self.ai.append(ai_temp)
 
     def stitching_data(self, flag_scale=True, interp_factor=1):
+        print('test')
         self.img_st, self.qp, self.qz = [], [], []
 
         if self.ai == []:
