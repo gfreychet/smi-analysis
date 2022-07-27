@@ -46,8 +46,8 @@ def stitching(datas, ais, masks, geometry ='Reflection', interp_factor = 2, flag
         nb_point_qp += len(q_p_ini[:, i]) - y
 
         z = np.argmin(abs(q_z_ini[:, i - 1] - np.min(q_z_ini[:, i])))
-        if z==0:
-            nb_point_qz += 0 #same qz range
+        if geometry == 'Transmission':
+            nb_point_qz += z
         else:
             nb_point_qz += len(q_z_ini[:, i]) - z
 
