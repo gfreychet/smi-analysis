@@ -153,17 +153,17 @@ def stitching(datas, ais, masks, geometry ='Reflection', interp_factor = 2, flag
                 else:
                     if i % 3 == 0:
                         sca3 = np.zeros(np.shape(img_te))
-                        sca3[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                        sca3[qz_start:qz_start+np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (
                                     qimage >= threshold).astype(int)
                         scales.append(scale)
                     elif i % 3 == 1:
                         sca4 = np.zeros(np.shape(img_te))
-                        sca4[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                        sca4[qz_start:qz_start+np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (
                                     qimage >= threshold).astype(int)
                         scales.append(scale)
                     elif i % 3 == 2:
                         sca5 = np.zeros(np.shape(img_te))
-                        sca5[:, qp_start:  qp_start + np.shape(qimage)[1]] += (
+                        sca5[qz_start:qz_start+np.shape(qimage)[0], qp_start:  qp_start + np.shape(qimage)[1]] += (
                                     qimage >= threshold).astype(int)
                         scales.append(scale)
 
