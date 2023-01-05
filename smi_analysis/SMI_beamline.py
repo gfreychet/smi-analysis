@@ -1,3 +1,4 @@
+import enum
 from pyFAI import azimuthalIntegrator
 from pygix import Transform
 from smi_analysis import Detector, stitch, integrate1D
@@ -94,25 +95,21 @@ class SMI_geometry():
         for i, (img, bs) in enumerate(zip(lst_img, self.bs)):
             if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss':
                 if self.detector == 'Pilatus900kw':
-                    if self.det_angles != []:
-                        module = 0
-                        if np.rad2deg(self.det_angles[i]) < 4:
-                            module = 1
-
-                    masks = self.det.calc_mask(bs=bs, module=module, bs_kind=self.bs_kind, optional_mask=optional_mask)
-                    self.masks.append(masks[0])
-                    self.masks.append(masks[1])
-                    self.masks.append(masks[2])
-
+                    masks = self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask)
+                    self.masks.append(masks[:, :195])
+                    self.masks.append(masks[:, 212:212 + 195])
+                    self.masks.append(masks[:, -195:])
                 else:
                     self.masks.append(self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask))
 
             if self.detector == 'Pilatus1m':
                 self.imgs.append(fabio.open(os.path.join(path, img)).data)
             elif self.detector == 'Pilatus900kw':
+                # self.imgs.append(np.rot90(fabio.open(os.path.join(path, img)).data, 1))
                 self.imgs.append(np.rot90(fabio.open(os.path.join(path, img)).data, 1)[:, :195])
                 self.imgs.append(np.rot90(fabio.open(os.path.join(path, img)).data, 1)[:, 212:212 + 195])
                 self.imgs.append(np.rot90(fabio.open(os.path.join(path, img)).data, 1)[:, -195:])
+
             elif self.detector == 'Pilatus300kw':
                 self.imgs.append(np.rot90(fabio.open(os.path.join(path, img)).data, 1))
             elif self.detector == 'rayonix':
@@ -149,9 +146,7 @@ class SMI_geometry():
             if self.detector == 'Pilatus1m':
                 self.imgs.append(img)
             elif self.detector == 'Pilatus900kw':
-                self.imgs.append([np.rot90(img, 1)[:, :195],
-                                  np.rot90(img, 1)[:, 212:212 + 195],
-                                  np.rot90(img, 1)[:, -195:]])
+                self.imgs.append(np.rot90(img, 1))
             elif self.detector == 'Pilatus300kw':
                 self.imgs.append(np.rot90(img, 1))
             elif self.detector == 'rayonix':
@@ -163,6 +158,7 @@ class SMI_geometry():
                 self.imgs.append(img)
 
     def calculate_integrator_trans(self, det_rots):
+        self.ai = []
         ai = azimuthalIntegrator.AzimuthalIntegrator(**{'detector': self.det,
                                                         'rot1': 0,
                                                         'rot2': 0,
@@ -279,10 +275,11 @@ class SMI_geometry():
         else:
             raise Exception('scaling waxs images error')
 
-    def inpainting(self):
+    def inpainting(self, **kwargs):
         self.inpaints, self.mask_inpaints = integrate1D.inpaint_saxs(self.imgs,
                                                                      self.ai,
-                                                                     self.masks
+                                                                     self.masks,
+                                                                     **kwargs
                                                                      )
 
     def caking(self, radial_range=None, azimuth_range=None, npt_rad=500, npt_azim=500):
