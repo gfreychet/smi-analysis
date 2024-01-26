@@ -36,11 +36,11 @@ class SMI_geometry():
         self.det_angle_step = det_angle_step
         self.det_angles = det_angles
 
-        self.ai = []
+        self.ai = np.array([])
         self.masks = []
         self.cake = []
-        self.inpaints, self.mask_inpaints = [], []
-        self.img_st, self.mask_st = [], []
+        self.inpaints, self.mask_inpaints = np.array([]), np.array([])
+        self.img_st, self.mask_st = np.array([]), np.array([])
         self.bs_kind = bs_kind
         self.scales = 1
 
@@ -223,8 +223,8 @@ class SMI_geometry():
 
     def stitching_data(self, flag_scale=True, interp_factor=1):
         self.img_st, self.qp, self.qz = [], [], []
-
-        if self.ai == []:
+        
+        if not(self.ai.size):
             if len(self.det_angles) != len(self.imgs):
                 if self.detector != 'Pilatus900kw':
                     if len(self.det_angles) !=0 and len(self.det_angles) > len(self.imgs):
