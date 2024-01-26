@@ -36,11 +36,11 @@ class SMI_geometry():
         self.det_angle_step = det_angle_step
         self.det_angles = det_angles
 
-        self.ai = np.array([])
+        self.ai = []
         self.masks = []
         self.cake = []
-        self.inpaints, self.mask_inpaints = np.array([]), np.array([])
-        self.img_st, self.mask_st = np.array([]), np.array([])
+        self.inpaints, self.mask_inpaints = [], []
+        self.img_st, self.mask_st = [], []
         self.bs_kind = bs_kind
         self.scales = 1
 
@@ -224,7 +224,7 @@ class SMI_geometry():
     def stitching_data(self, flag_scale=True, interp_factor=1):
         self.img_st, self.qp, self.qz = [], [], []
         
-        if not(self.ai.size):
+        if np.array_equal(self.ai, []):
             if len(self.det_angles) != len(self.imgs):
                 if self.detector != 'Pilatus900kw':
                     if len(self.det_angles) !=0 and len(self.det_angles) > len(self.imgs):
@@ -283,7 +283,7 @@ class SMI_geometry():
                                                                      )
 
     def caking(self, radial_range=None, azimuth_range=None, npt_rad=500, npt_azim=500):
-        if not(self.img_st.size):
+        if np.array_equal(self.img_st, []):
             self.stitching_data()
 
         if radial_range is None and 'Pilatus' in self.detector:
@@ -292,7 +292,7 @@ class SMI_geometry():
             azimuth_range = (-180, 180)
 
         if self.geometry == 'Transmission':
-            if not(self.inpaints.size):
+            if np.array_equal(self.inpaints, []):
                 self.inpainting()
             self.cake, self.q_cake, self.chi_cake = integrate1D.cake_saxs(self.inpaints,
                                                                           self.ai,
@@ -304,7 +304,7 @@ class SMI_geometry():
                                                                           )
         elif self.geometry == 'Reflection':
             #ToDo implement a way to modify the dimension of the cake if required (it need to match the image dim ratio)
-            #if not(self.inpaints.size):
+            # if np.array_equal(self.inpaints, []):
             #     self.inpainting()
             self.cake, self.q_cake, self.chi_cake = integrate1D.cake_gisaxs(self.img_st,
                                                                             self.qp,
@@ -318,7 +318,7 @@ class SMI_geometry():
         self.q_rad, self.I_rad = [], []
 
         if self.geometry == 'Transmission':
-            if not(self.inpaints.size):
+            if np.array_equal(self.inpaints, []):
                 self.inpainting()
             if radial_range is None and (self.detector == 'Pilatus300kw' or self.detector == 'Pilatus900kw'):
                 radial_range = (0.001, np.sqrt(self.qp[1]**2 + self.qz[1]**2))
@@ -339,7 +339,7 @@ class SMI_geometry():
                                                                     )
 
         elif self.geometry == 'Reflection':
-            if not(self.img_st.size):
+            if np.array_equal(self.img_st, []):
                 self.stitching_data()
             if radial_range is None and 'Pilatus' in self.detector:
                 radial_range = (0, self.qp[1])
@@ -373,7 +373,7 @@ class SMI_geometry():
         if azimuth_range is None and self.detector == 'Pilatus1m':
             azimuth_range = (-180, 180)
 
-        if not(self.cake.size):
+        if np.array_equal(self.cake, []):
             self.caking(radial_range=radial_range,
                         azimuth_range=azimuth_range,
                         npt_rad=npt_rad,
@@ -388,7 +388,7 @@ class SMI_geometry():
                                                                   )
 
     def horizontal_integration(self, q_per_range=None, q_par_range=None):
-        if not(self.img_st.size):
+        if np.array_equal(self.img_st, []):
             self.stitching_data()
 
         self.q_hor, self.I_hor = integrate1D.integrate_qpar(self.img_st,
@@ -399,7 +399,7 @@ class SMI_geometry():
                                                             )
 
     def vertical_integration(self, q_per_range=None, q_par_range=None):
-        if not(self.img_st.size):
+        if np.array_equal(self.img_st, []):
             self.stitching_data()
 
         self.q_ver, self.I_ver = integrate1D.integrate_qper(self.img_st,
