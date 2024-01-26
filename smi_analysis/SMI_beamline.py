@@ -224,7 +224,7 @@ class SMI_geometry():
     def stitching_data(self, flag_scale=True, interp_factor=1):
         self.img_st, self.qp, self.qz = [], [], []
 
-        if not(self.ai.size):
+        if self.ai == []:
             if len(self.det_angles) != len(self.imgs):
                 if self.detector != 'Pilatus900kw':
                     if len(self.det_angles) !=0 and len(self.det_angles) > len(self.imgs):
