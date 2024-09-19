@@ -74,7 +74,7 @@ class SMI_geometry():
         elif self.detector == 'Eiger1M_xeuss':
             self.det = Detector.Eiger1M_xeuss()
         else:
-            raise Exception('Unknown detector for SMI. Should be either: Pilatus1m or Pilatus300kw or rayonix')
+            raise Exception('Unknown detector for SMI. Should be either: Pilatus1m or Pilatus900kw or Pilatus300kw or rayonix')
 
     def open_data(self, path, lst_img, optional_mask=None):
         """
