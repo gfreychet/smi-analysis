@@ -276,7 +276,7 @@ class Eiger1M_xeuss(Eiger1M):
     '''
     aliases = ["Eiger1M_xeuss"]
 
-    def calc_mask(self, img):
+    def calc_mask(self, img, bs, bs_kind=None):
         '''
         :return: (a 2D array) A mask array with 0 and 1 with 0s where the image will be masked
         '''
@@ -285,7 +285,12 @@ class Eiger1M_xeuss(Eiger1M):
         self.shape= np.shape(img)
         mask[np.where(img<-0.5)]=False
 
-        mask[:, :5], mask[:, -5:], mask[:5, :], mask[-5:,
-                                                :] = False, False, False, False
-
-        return np.logical_not(mask)
+        mask[:, :5], mask[:, -5:], mask[:5, :], mask[-5:, :] = False, False, False, False
+        mask[bs[1]:, bs[0] - 8: bs[0] + 8] = False
+        
+        #Beamstop
+        if bs == [0, 0]:
+            return np.logical_not(mask)
+        else:
+            mask[bs[1]:, bs[0] - 8 : bs[0] + 8] = False
+            return np.logical_not(mask)
