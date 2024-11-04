@@ -72,8 +72,10 @@ class SMI_geometry():
             self.det = Detector.Pilatus300k_OPLS()
         elif self.detector == 'Eiger1M_xeuss':
             self.det = Detector.Eiger1M_xeuss()
+        elif self.detector == 'Eiger500k_xeuss':
+            self.det = Detector.Eiger500k_xeuss()
         else:
-            raise Exception('Unknown detector for SMI. Should be either: Pilatus1m or Pilatus900kw or Pilatus300kw or rayonix')
+            raise Exception('Unknown detector for SMI. Should be either: Pilatus1m or Pilatus900kw or Pilatus300kw or rayonix or Eiger1M_xeuss or Eiger500k_xeuss')
 
     def open_data(self, path, lst_img, optional_mask=None):
         """
@@ -92,7 +94,7 @@ class SMI_geometry():
             self.bs = self.bs + [[0, 0]]*(len(lst_img) - len(self.bs))
 
         for i, (img, bs) in enumerate(zip(lst_img, self.bs)):
-            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss':
+            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss' and self.detector != 'Eiger500k_xeuss':
                 if self.detector == 'Pilatus900kw':
                     masks = self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask)
                     self.masks.append(masks[:, :195])
@@ -139,7 +141,7 @@ class SMI_geometry():
 
         self.imgs = []
         for img, bs in zip(lst_img, self.bs):
-            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss':
+            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss' and self.detector != 'Eiger500k_xeuss':
                 self.masks.append(self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask))
             if self.detector == 'Pilatus1m':
                 self.imgs.append(img)
@@ -166,7 +168,7 @@ class SMI_geometry():
                                                      )
         ai.set_wavelength(self.wav)
 
-        if self.detector == 'Eiger1M_xeuss':
+        if self.detector == 'Eiger1M_xeuss' or self.detector == 'Eiger500k_xeuss':
             if len(det_rots) == len(self.center) and len(det_rots) == len(self.sdd):
                 for i, (det_rot, center, sdd) in enumerate(zip(det_rots, self.center, self.sdd)):
                     ai.setFit2D(sdd, center[0], center[1])
@@ -193,7 +195,7 @@ class SMI_geometry():
     def calculate_integrator_gi(self, det_rots):
         ai = Transform(wavelength=self.wav, detector=self.det, incident_angle=self.alphai)
 
-        if self.detector == 'Eiger1M_xeuss':
+        if self.detector == 'Eiger1M_xeuss' or self.detector == 'Eiger500k_xeuss':
             if len(det_rots) == len(self.center) and len(det_rots) == len(self.sdd):
                 for i, (det_rot, center, sdd) in enumerate(zip(det_rots, self.center, self.sdd)):
                     ai.setFit2D(directDist=sdd, centerX=center[0], centerY=center[1])
