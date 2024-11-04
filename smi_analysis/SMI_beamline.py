@@ -7,7 +7,6 @@ import fabio
 import numpy as np
 import copy
 
-
 class SMI_geometry():
     def __init__(self,
                  geometry,
@@ -142,7 +141,6 @@ class SMI_geometry():
         for img, bs in zip(lst_img, self.bs):
             if self.detector != 'rayonix':
                 self.masks.append(self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask))
-
             if self.detector == 'Pilatus1m':
                 self.imgs.append(img)
             elif self.detector == 'Pilatus900kw':
@@ -155,6 +153,8 @@ class SMI_geometry():
             elif self.detector == 'Pilatus100k_OPLS':
                 self.imgs.append(img)
             elif self.detector == 'Pilatus300k_OPLS':
+                self.imgs.append(img)
+            elif self.detector == 'Eiger1M_xeuss':
                 self.imgs.append(img)
 
     def calculate_integrator_trans(self, det_rots):
