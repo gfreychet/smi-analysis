@@ -139,7 +139,7 @@ class SMI_geometry():
 
         self.imgs = []
         for img, bs in zip(lst_img, self.bs):
-            if self.detector != 'rayonix':
+            if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss':
                 self.masks.append(self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask))
             if self.detector == 'Pilatus1m':
                 self.imgs.append(img)
