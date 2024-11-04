@@ -295,7 +295,8 @@ class Eiger500k_xeuss(Eiger500k):
     Eiger1M class inherited from the pyFAI Eiger1M class
     This class is used to add a specific masking for the Eiger1M of the xeuss instru at CEA
     '''
-    aliases = ["Eiger1M_xeuss"]
+    aliases = ["Eiger500k_xeuss"]
+    MAX_SHAPE = (1030, 514)
 
     def calc_mask(self, img):
         '''
