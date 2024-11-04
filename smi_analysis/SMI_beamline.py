@@ -162,8 +162,7 @@ class SMI_geometry():
             elif self.detector == 'Eiger1M_xeuss':
                 self.imgs.append(img)
             elif self.detector == 'Eiger500k_xeuss':
-                self.imgs.append(fabio.open(os.path.join(path, img)).data)
-                self.masks.append(self.det.calc_mask(img=self.imgs[0]))
+                self.imgs.append(img)
 
     def calculate_integrator_trans(self, det_rots):
         self.ai = []
