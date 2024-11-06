@@ -146,6 +146,8 @@ class SMI_geometry():
         for img, bs in zip(lst_img, self.bs):
             if self.detector != 'rayonix' and self.detector != 'Eiger1M_xeuss' and self.detector != 'Eiger500k_xeuss':
                 self.masks.append(self.det.calc_mask(bs=bs, bs_kind=self.bs_kind, optional_mask=optional_mask))
+            if self.detector == 'Eiger1M_xeuss' or self.detector == 'Eiger500k_xeuss':
+                self.masks.append(self.det.calc_mask(img=img))
             if self.detector == 'Pilatus1m':
                 self.imgs.append(img)
             elif self.detector == 'Pilatus900kw':
@@ -163,6 +165,7 @@ class SMI_geometry():
                 self.imgs.append(img)
             elif self.detector == 'Eiger500k_xeuss':
                 self.imgs.append(img)
+
 
     def calculate_integrator_trans(self, det_rots):
         self.ai = []
